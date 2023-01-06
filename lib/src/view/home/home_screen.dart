@@ -2,6 +2,8 @@ import 'package:avatar_glow/avatar_glow.dart';
 import 'package:chat_gpt_demo/src/model/chat_model.dart';
 import 'package:chat_gpt_demo/src/network/network_utils.dart';
 import 'package:chat_gpt_demo/src/services/tts.dart';
+import 'package:chat_gpt_demo/src/view/base/k_scroll_behavior.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../../utils/colors.dart';
@@ -23,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   scrollMethod() {
     _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
+      _scrollController.position.maxScrollExtent + 70,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
@@ -31,7 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // scrollMethod();
     super.initState();
   }
 
@@ -65,23 +66,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: kBlack,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: message.length,
-                  itemBuilder: (context, index) {
-                    var msg = message[index];
-                    return _chatBubble(msg);
-                  },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 5),
+                child: ScrollConfiguration(
+                  behavior: KScrollBehavior(),
+                  child: ListView.separated(
+                    // physics: const BouncingScrollPhysics(),
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    itemCount: message.length,
+                    itemBuilder: (context, index) {
+                      var msg = message[index];
+                      return _chatBubble(msg);
+                    },
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 5),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Developed By @RH',
+              'Developed By @Rifat Hossain',
               style: TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
@@ -110,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _speechToText.listen(onResult: (result) {
                     setState(() {
                       _text = result.recognizedWords;
+                      scrollMethod();
                     });
                   });
                 });
@@ -122,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             _speechToText.stop();
 
-            if (_text.isNotEmpty ||
+            if (_text.isNotEmpty &&
                 _text != "Hold the button and start speaking") {
               message.add(ChatMessage(_text, ChatMessageType.user));
               var msg = await Network.sendMessage(_text);
@@ -131,11 +136,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 message.add(ChatMessage(msg, ChatMessageType.bot));
               });
 
+
+
               /// to speak
               try{
                 Future.delayed(
                   const Duration(milliseconds: 300),
                       () {
+                    scrollMethod();
                     TextToSpeech.speak(msg);
                   },
                 );
@@ -148,10 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: CircleAvatar(
             maxRadius: 35,
-            backgroundColor: appColor,
+            backgroundColor: kWhite.withOpacity(0.9),
             child: Icon(
               _isSpeaking ? Icons.mic : Icons.mic_none,
-              color: kWhite,
+              color: appColor,
             ),
           ),
         ),
@@ -163,14 +171,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        message.type == ChatMessageType.bot ? CircleAvatar(
+          backgroundColor: appColor,
+          backgroundImage: AssetImage('assets/chatGpt_icon.jpg'),
+        ) :
         CircleAvatar(
           backgroundColor: appColor,
-          child: message.type == ChatMessageType.bot
-              ? Icon(
-                  Icons.hourglass_bottom,
-                  color: kWhite,
-                )
-              : Icon(
+          child: Icon(
                   Icons.person,
                   color: kWhite,
                 ),
@@ -181,18 +188,18 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-                color: kWhite,
+                color: message.type == ChatMessageType.bot ? appColor : kWhite,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
                   bottomRight: Radius.circular(12),
-                )),
+                ),),
             child: Text(
               message.text ?? '',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: kBlack,
+                color: message.type == ChatMessageType.bot ? kWhite : kBlack,
               ),
             ),
           ),

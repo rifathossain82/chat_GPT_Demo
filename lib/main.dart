@@ -4,7 +4,9 @@ import 'package:chat_gpt_demo/src/services/tts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'my_app.dart';
+import 'src/utils/colors.dart';
+import 'src/utils/strings.dart';
+import 'src/view/home/home_screen.dart';
 
 class MyHttpOverrides extends HttpOverrides{
   @override
@@ -25,4 +27,23 @@ void main() {
   );
 
   runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
+      title: appName,
+      theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            backgroundColor: appColor,
+            foregroundColor: kWhite,
+          )
+      ),
+    );
+  }
 }
