@@ -97,13 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: AvatarGlow(
-        endRadius: 75,
         duration: const Duration(milliseconds: 2000),
         glowColor: appColor,
         repeat: true,
-        repeatPauseDuration: const Duration(milliseconds: 100),
-        animate: _isSpeaking,
-        showTwoGlows: true,
+        startDelay: const Duration(milliseconds: 100),
+        animate: true,
         child: GestureDetector(
           onTapDown: (_) async {
             if (!_isSpeaking) {
